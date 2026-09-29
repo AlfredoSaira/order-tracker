@@ -1,0 +1,47 @@
+# Human-readable statement of what the headless responder agent may do.
+# The actual enforcement lives in agent_runner.py (the --restricted,
+# --tools, --allowedTools, --disallowedTools, and --permission-mode flags
+# passed to `claude`) -- this file documents that policy, it does not
+# implement it. If the two ever disagree, agent_runner.py is what actually
+# ran; update this file to match it, not the other way around.
+
+version: 1
+
+default: deny
+# --restricted starts every run with NO code-running tools at all, ignoring
+# this machine's own Claude Code settings; only the tools listed below are
+# ever re-enabled for the responder's runs.
+
+sandbox:
+  starting_point: "--restricted (no Bash/Edit/WebFetch until explicitly re-added)"
+  file_edits_confined_to:
+    - app/**
+    - tests/**
+  allowed_commands:
+    - "uv run --frozen pytest -q"
+    - "incident-response/runbooks/redeploy.sh"
+    - "incident-response/runbooks/verify-recovery.sh <path>..."
+    - "git status / git diff / git log (read-only)"
+  explicitly_denied:
+    - "git commit / git push / git reset / git checkout"
+    - "docker (any subcommand)"
+    - "WebFetch / WebSearch (excluded by --restricted, never re-added)"
+  on_unlisted_action: "denied automatically (--permission-mode dontAsk, --permission-prompts none) -- there is no human to ask in headless mode"
+  spend_cap: "--max-budget-usd (see RESPONDER_MAX_BUDGET_USD)"
+  time_cap: "killed after RESPONDER_AGENT_TIMEOUT seconds (default 900)"
+
+rules:
+  - name: test-alert
+    when: "alert.labels.test == 'true'"
+    action: "no changes; answer ACTION: none"
+
+  - name: order-lookup-5xx
+    when: "alert.labels.alertname == 'Order lookup 5xx errors' and status == firing"
+    allowed_actions: [fix, escalate]
+    requires_before_fix_accepted:
+      - "regression test added under tests/ that fails without the fix"
+      - "uv run --frozen pytest -q passes"
+    requires_after_fix: "responder re-curls the failing order id itself (verify-recovery.sh) -- the agent's own claim of 'fixed' is not trusted on its own"
+
+  - name: anything_else
+    action: escalate

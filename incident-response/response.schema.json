@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Order Tracker incident responder answer",
+  "description": "The 6 fields the responder parses out of the agent's final answer text (see responder-task.md's required answer format).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "incident": { "type": "string" },
+    "root_cause": { "type": "string" },
+    "fix": { "type": "string" },
+    "tests": { "type": "string" },
+    "action": { "type": "string", "enum": ["none", "fixed", "escalate", "unknown"] },
+    "summary": { "type": "string" },
+    "last_line": {
+      "type": "string",
+      "description": "The last non-empty line of the agent's answer verbatim -- this is the field Homework 4 Question 5 asks to report."
+    }
+  },
+  "required": ["incident", "root_cause", "fix", "tests", "action", "summary", "last_line"]
+}

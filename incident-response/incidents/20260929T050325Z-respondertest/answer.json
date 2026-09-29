@@ -1,0 +1,9 @@
+{
+  "incident": "20260929T050325Z-respondertest",
+  "root_cause": "n/a",
+  "fix": "none",
+  "tests": "not run",
+  "action": "none",
+  "summary": "The ResponderTest alert was a test notification, so no investigation or changes were made.",
+  "last_line": "SUMMARY: The ResponderTest alert was a test notification, so no investigation or changes were made."
+}

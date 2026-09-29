@@ -1,0 +1,93 @@
+{
+  "id": "20260929T050325Z-respondertest",
+  "status": "closed",
+  "created_at": "2026-09-29T05:03:25.924306+00:00",
+  "alert": {
+    "status": "firing",
+    "labels": {
+      "alertname": "ResponderTest",
+      "test": "true"
+    },
+    "annotations": {
+      "summary": "Test notification; no incident to fix"
+    }
+  },
+  "timeline": [
+    {
+      "at": "2026-09-29T05:03:25.924449+00:00",
+      "status": "received",
+      "note": "firing alert ResponderTest"
+    },
+    {
+      "at": "2026-09-29T05:03:25.970823+00:00",
+      "status": "evidence_collected",
+      "note": "0 error logs, 0 error traces, failing order ids: none"
+    },
+    {
+      "at": "2026-09-29T05:03:25.971073+00:00",
+      "status": "agent_running",
+      "note": "claude --restricted, sandboxed to app/ and tests/"
+    },
+    {
+      "at": "2026-09-29T05:03:30.160472+00:00",
+      "status": "agent_done",
+      "note": "action=none exit=0"
+    },
+    {
+      "at": "2026-09-29T05:03:30.160696+00:00",
+      "status": "closed",
+      "note": "agent found nothing to fix"
+    }
+  ],
+  "agent": {
+    "command": [
+      "claude",
+      "-p",
+      "--restricted",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--permission-mode",
+      "dontAsk",
+      "--permission-prompts",
+      "none",
+      "--strict-mcp-config",
+      "--max-budget-usd",
+      "2",
+      "--tools",
+      "Read,Grep,Glob,Edit,Bash",
+      "--allowedTools",
+      "Edit(./app/**)",
+      "Edit(./tests/**)",
+      "Bash(uv run --frozen pytest:*)",
+      "Bash(incident-response/runbooks/redeploy.sh)",
+      "Bash(incident-response/runbooks/verify-recovery.sh:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "--disallowedTools",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git reset:*)",
+      "Bash(git checkout:*)",
+      "Bash(docker:*)"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "duration_s": 4.2,
+    "model": "claude-opus-5-5",
+    "permission_mode": "dontAsk",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read"
+    ],
+    "num_turns": 1,
+    "cost_usd": 0.0196364,
+    "is_error": false,
+    "permission_denials": [],
+    "last_line": "SUMMARY: The ResponderTest alert was a test notification, so no investigation or changes were made."
+  }
+}
