@@ -117,6 +117,7 @@ def test_real_alert_runs_full_flow_and_self_verifies(client, monkeypatch):
         "last_line": "SUMMARY: Fixed the express delivery date bug.",
     }
     monkeypatch.setattr(responder.agent_runner, "run", lambda *a, **k: fake_result)
+    monkeypatch.setattr(responder, "redeploy", lambda: {"exit_code": 0, "output": "rebuilt"})
     monkeypatch.setattr(
         responder, "verify_recovery", lambda paths: {"paths": paths, "exit_code": 0, "output": "RECOVERED"}
     )
@@ -141,9 +142,34 @@ def test_unverified_fix_is_escalated(client, monkeypatch):
         "last_line": "SUMMARY: claims fixed",
     }
     monkeypatch.setattr(responder.agent_runner, "run", lambda *a, **k: fake_result)
+    monkeypatch.setattr(responder, "redeploy", lambda: {"exit_code": 0, "output": "rebuilt"})
     monkeypatch.setattr(
         responder, "verify_recovery", lambda paths: {"paths": paths, "exit_code": 1, "output": "NOT RECOVERED"}
     )
+
+    payload = {"alerts": [{"status": "firing", "labels": {"alertname": "Order lookup 5xx errors"}, "annotations": {}}]}
+    response = client.post("/alerts", json=payload)
+    incident_id = response.json()["results"][0]["incident_id"]
+
+    record = wait_for_status(responder.INCIDENTS_DIR, incident_id, {"recovered", "escalated"})
+    assert record["status"] == "escalated"
+
+
+def test_failed_redeploy_is_escalated_without_verifying(client, monkeypatch):
+    fake_evidence = Evidence("t0", "t1", {"500": 1}, [], [], ["express-1002"])
+    monkeypatch.setattr(responder.evidence_module, "collect", lambda: fake_evidence)
+    fake_result = {
+        **FAKE_RESULT_BASE,
+        "answer_text": "ACTION: fixed\nSUMMARY: claims fixed",
+        "last_line": "SUMMARY: claims fixed",
+    }
+    monkeypatch.setattr(responder.agent_runner, "run", lambda *a, **k: fake_result)
+    monkeypatch.setattr(responder, "redeploy", lambda: {"exit_code": 1, "output": "build failed"})
+
+    def fail_if_called(paths):
+        raise AssertionError("must not verify against a container that was never rebuilt")
+
+    monkeypatch.setattr(responder, "verify_recovery", fail_if_called)
 
     payload = {"alerts": [{"status": "firing", "labels": {"alertname": "Order lookup 5xx errors"}, "annotations": {}}]}
     response = client.post("/alerts", json=payload)

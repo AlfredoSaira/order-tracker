@@ -1,0 +1,50 @@
+{
+  "receiver": "incident-responder",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "Order lookup 5xx errors",
+        "endpoint": "/api/orders/{order_id}",
+        "grafana_folder": "Order Tracker Alerts",
+        "severity": "critical"
+      },
+      "annotations": {
+        "summary": "Order Tracker: /api/orders/{order_id} returned 5xx responses in the last 5 minutes. Dashboard: http://localhost:3000/d/order-tracker/order-tracker"
+      },
+      "startsAt": "2026-09-29T05:13:50Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://localhost:3000/alerting/grafana/order-lookup-5xx/view?orgId=1",
+      "fingerprint": "41c624dfa9a14afc",
+      "silenceURL": "http://localhost:3000/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DOrder+lookup+5xx+errors&matcher=endpoint%3D%2Fapi%2Forders%2F%7Border_id%7D&matcher=grafana_folder%3DOrder+Tracker+Alerts&matcher=severity%3Dcritical&orgId=1",
+      "dashboardURL": "",
+      "panelURL": "",
+      "values": {
+        "A": 5.084745762711864,
+        "C": 1
+      },
+      "valueString": "[ var='A' labels={} value=5.084745762711864 ], [ var='C' labels={} value=1 ]"
+    }
+  ],
+  "groupLabels": {
+    "alertname": "Order lookup 5xx errors"
+  },
+  "commonLabels": {
+    "alertname": "Order lookup 5xx errors",
+    "endpoint": "/api/orders/{order_id}",
+    "grafana_folder": "Order Tracker Alerts",
+    "severity": "critical"
+  },
+  "commonAnnotations": {
+    "summary": "Order Tracker: /api/orders/{order_id} returned 5xx responses in the last 5 minutes. Dashboard: http://localhost:3000/d/order-tracker/order-tracker"
+  },
+  "externalURL": "http://localhost:3000/",
+  "version": "1",
+  "groupKey": "{}:{alertname=\"Order lookup 5xx errors\"}",
+  "truncatedAlerts": 0,
+  "orgId": 1,
+  "title": "[FIRING:1] Order lookup 5xx errors (/api/orders/{order_id} Order Tracker Alerts critical)",
+  "state": "alerting",
+  "message": "**Firing**\n\nValue: A=5.084745762711864, C=1\nLabels:\n - alertname = Order lookup 5xx errors\n - endpoint = /api/orders/{order_id}\n - grafana_folder = Order Tracker Alerts\n - severity = critical\nAnnotations:\n - summary = Order Tracker: /api/orders/{order_id} returned 5xx responses in the last 5 minutes. Dashboard: http://localhost:3000/d/order-tracker/order-tracker\nSource: http://localhost:3000/alerting/grafana/order-lookup-5xx/view?orgId=1\nSilence: http://localhost:3000/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DOrder+lookup+5xx+errors&matcher=endpoint%3D%2Fapi%2Forders%2F%7Border_id%7D&matcher=grafana_folder%3DOrder+Tracker+Alerts&matcher=severity%3Dcritical&orgId=1\n"
+}

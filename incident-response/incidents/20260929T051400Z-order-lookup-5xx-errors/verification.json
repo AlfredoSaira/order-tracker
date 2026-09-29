@@ -1,0 +1,7 @@
+{
+  "paths": [
+    "/api/orders/express-1002"
+  ],
+  "exit_code": 0,
+  "output": "attempt 1 GET /api/orders/express-1002 -> 200\nattempt 2 GET /api/orders/express-1002 -> 200\nattempt 3 GET /api/orders/express-1002 -> 200\nRECOVERED\n"
+}

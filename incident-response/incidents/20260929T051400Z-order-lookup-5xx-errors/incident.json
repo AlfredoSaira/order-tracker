@@ -1,0 +1,121 @@
+{
+  "id": "20260929T051400Z-order-lookup-5xx-errors",
+  "status": "recovered",
+  "created_at": "2026-09-29T05:14:00.015289+00:00",
+  "alert": {
+    "status": "firing",
+    "labels": {
+      "alertname": "Order lookup 5xx errors",
+      "endpoint": "/api/orders/{order_id}",
+      "grafana_folder": "Order Tracker Alerts",
+      "severity": "critical"
+    },
+    "annotations": {
+      "summary": "Order Tracker: /api/orders/{order_id} returned 5xx responses in the last 5 minutes. Dashboard: http://localhost:3000/d/order-tracker/order-tracker"
+    },
+    "startsAt": "2026-09-29T05:13:50Z",
+    "endsAt": "0001-01-01T00:00:00Z",
+    "generatorURL": "http://localhost:3000/alerting/grafana/order-lookup-5xx/view?orgId=1",
+    "fingerprint": "41c624dfa9a14afc",
+    "silenceURL": "http://localhost:3000/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DOrder+lookup+5xx+errors&matcher=endpoint%3D%2Fapi%2Forders%2F%7Border_id%7D&matcher=grafana_folder%3DOrder+Tracker+Alerts&matcher=severity%3Dcritical&orgId=1",
+    "dashboardURL": "",
+    "panelURL": "",
+    "values": {
+      "A": 5.084745762711864,
+      "C": 1
+    },
+    "valueString": "[ var='A' labels={} value=5.084745762711864 ], [ var='C' labels={} value=1 ]"
+  },
+  "timeline": [
+    {
+      "at": "2026-09-29T05:14:00.015652+00:00",
+      "status": "received",
+      "note": "firing alert Order lookup 5xx errors"
+    },
+    {
+      "at": "2026-09-29T05:14:00.113386+00:00",
+      "status": "evidence_collected",
+      "note": "5 error logs, 5 error traces, failing order ids: ['express-1002']"
+    },
+    {
+      "at": "2026-09-29T05:14:00.113870+00:00",
+      "status": "agent_running",
+      "note": "claude --restricted, sandboxed to app/ and tests/"
+    },
+    {
+      "at": "2026-09-29T05:14:34.984917+00:00",
+      "status": "agent_done",
+      "note": "action=fixed exit=0"
+    },
+    {
+      "at": "2026-09-29T05:14:34.985248+00:00",
+      "status": "redeploying",
+      "note": "rebuilding the app container with the agent's fix"
+    },
+    {
+      "at": "2026-09-29T05:14:43.067995+00:00",
+      "status": "recovered",
+      "note": "verify-recovery.sh passed; fix awaits human review before commit"
+    }
+  ],
+  "agent": {
+    "command": [
+      "claude",
+      "-p",
+      "--restricted",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--permission-mode",
+      "dontAsk",
+      "--permission-prompts",
+      "none",
+      "--strict-mcp-config",
+      "--max-budget-usd",
+      "2",
+      "--tools",
+      "Read,Grep,Glob,Edit,Bash",
+      "--allowedTools",
+      "Edit(./app/**)",
+      "Edit(./tests/**)",
+      "Bash(uv run --frozen pytest:*)",
+      "Bash(incident-response/runbooks/redeploy.sh)",
+      "Bash(incident-response/runbooks/verify-recovery.sh:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "--disallowedTools",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git reset:*)",
+      "Bash(git checkout:*)",
+      "Bash(docker:*)"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "duration_s": 34.9,
+    "model": "claude-opus-5-5",
+    "permission_mode": "dontAsk",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Read"
+    ],
+    "num_turns": 11,
+    "cost_usd": 0.1586316,
+    "is_error": false,
+    "permission_denials": [
+      {
+        "tool_name": "Bash",
+        "tool_use_id": "toolu_01G6XCKVbNZRPpSs2uq2PGef",
+        "tool_input": {
+          "command": "cat >> tests/test_api.py <<'EOF'\n\n\ndef test_express_order_placed_at_month_end(client):\n    with main.connect() as db:\n        db.execute(\n            \"INSERT INTO orders VALUES (?, ?, ?, ?, ?, ?)\",\n            (\"express-month-end\", \"Jo\", \"Lamp\", \"express\", \"received\", \"2026-08-31T12:00:00+00:00\"),\n        )\n    response = client.get(\"/api/orders/express-month-end\")\n    assert response.status_code == 200\n    assert response.json()[\"estimated_delivery\"] == \"2026-09-02\"\nEOF\ngit stash push app/main.py -q && uv run --frozen pytest -q 2>&1 | tail -3; git stash pop -q && uv run --frozen pytest -q 2>&1 | tail -3",
+          "description": "Add regression test, verify it fails without fix and passes with it"
+        }
+      }
+    ],
+    "last_line": "SUMMARY: Order lookups for express orders placed at month end returned 500 because of a date overflow, and the fix switches to timedelta with a regression test added, ready for human review."
+  }
+}

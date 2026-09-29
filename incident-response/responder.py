@@ -36,6 +36,7 @@ REPO_ROOT = HERE.parent
 INCIDENTS_DIR = Path(os.getenv("RESPONDER_INCIDENTS_DIR", str(HERE / "incidents")))
 TASK_TEMPLATE = (HERE / "responder-task.md").read_text()
 VERIFY_SCRIPT = HERE / "runbooks" / "verify-recovery.sh"
+REDEPLOY_SCRIPT = HERE / "runbooks" / "redeploy.sh"
 
 PORT = int(os.getenv("RESPONDER_PORT", "8001"))
 # Loopback for local curl, plus Docker's default bridge gateway for Grafana's
@@ -108,6 +109,17 @@ def verify_recovery(paths: list[str]) -> dict:
         [str(VERIFY_SCRIPT), *paths], cwd=REPO_ROOT, capture_output=True, text=True, timeout=60
     )
     return {"paths": paths, "exit_code": result.returncode, "output": result.stdout + result.stderr}
+
+
+def redeploy() -> dict:
+    # The agent is never allowed to touch Docker (Bash(docker:*) is denied).
+    # Rebuilding the running container so its fix actually takes effect is
+    # the system's job, not the model's -- done here, after the code change,
+    # before we trust anything the agent said about being "fixed".
+    result = subprocess.run(
+        [str(REDEPLOY_SCRIPT)], cwd=REPO_ROOT, capture_output=True, text=True, timeout=180
+    )
+    return {"exit_code": result.returncode, "output": result.stdout + result.stderr}
 
 
 @dataclass
@@ -195,6 +207,12 @@ def handle_incident(incident: Incident) -> None:
 
         failing_paths = [f"/api/orders/{oid}" for oid in gathered.failing_order_ids]
         if answer["action"] == "fixed" and failing_paths:
+            incident.transition("redeploying", "rebuilding the app container with the agent's fix")
+            deploy = redeploy()
+            incident.write_json("redeploy.json", deploy)
+            if deploy["exit_code"] != 0:
+                incident.transition("escalated", "redeploy failed; the agent's fix was never rebuilt")
+                return
             verification = verify_recovery(failing_paths)
             incident.write_json("verification.json", verification)
             if verification["exit_code"] == 0:

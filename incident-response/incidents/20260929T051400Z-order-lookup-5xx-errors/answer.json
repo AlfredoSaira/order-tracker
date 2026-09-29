@@ -1,0 +1,9 @@
+{
+  "incident": "20260929T051400Z-order-lookup-5xx-errors",
+  "root_cause": "order_detail computed express delivery with placed_at.replace(day=placed_at.day + 2), which raises ValueError for orders placed in the last two days of a month (like the seeded express-1002), so those lookups returned 500.",
+  "fix": "app/main.py now computes the estimate with placed_at + timedelta(days=2); tests/test_api.py adds test_express_order_placed_at_month_end as a regression test.",
+  "tests": "uv run --frozen pytest -q -> 4 passed (the new test fails without the fix with ValueError: day is out of range for month)",
+  "action": "fixed",
+  "summary": "Order lookups for express orders placed at month end returned 500 because of a date overflow, and the fix switches to timedelta with a regression test added, ready for human review.",
+  "last_line": "SUMMARY: Order lookups for express orders placed at month end returned 500 because of a date overflow, and the fix switches to timedelta with a regression test added, ready for human review."
+}
