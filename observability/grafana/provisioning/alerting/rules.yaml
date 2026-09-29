@@ -1,0 +1,44 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: order-tracker-alerts
+    folder: Order Tracker Alerts
+    interval: 1m
+    rules:
+      - uid: order-lookup-5xx
+        title: "Order lookup 5xx errors"
+        condition: C
+        for: 1m
+        noDataState: OK
+        execErrState: Alerting
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              refId: A
+              instant: true
+              expr: >-
+                sum(increase(order_lookup_requests_total{http_route="/api/orders/{order_id}",
+                http_status_code=~"5.."}[5m]) or vector(0))
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+        labels:
+          endpoint: /api/orders/{order_id}
+          severity: critical
+        annotations:
+          summary: >-
+            Order Tracker: /api/orders/{order_id} returned 5xx responses in
+            the last 5 minutes. Dashboard:
+            http://localhost:3000/d/order-tracker/order-tracker
